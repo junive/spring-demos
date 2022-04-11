@@ -21,11 +21,8 @@ export class RoleService {
     return this.http.get(API_URL + '/content/user', { responseType: 'text' });
   }
 
-  public getModeratorBoard(): Observable<any> {
-    return this.http.get(API_URL + '/content/mod', { responseType: 'text' });
-  }
 
-  public getAdminBoard(): Observable<any> {
-    return this.http.get(API_URL + '/content/admin', { responseType: 'text' });
+  public getAdminBoard(): Observable<any[]> {
+    return this.http.get<any[]>(API_URL + '/user/all');
   }
 }

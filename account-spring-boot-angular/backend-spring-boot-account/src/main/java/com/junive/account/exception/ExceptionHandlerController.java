@@ -32,7 +32,7 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(CustomExceptionInvalid.class)
-    public final void handleInvalidToken(CustomExceptionInvalid ex,
+    public final void handleInvalid(CustomExceptionInvalid ex,
                                          HttpServletRequest request,
                                          HttpServletResponse response) {
         this.printError(ex);
@@ -43,7 +43,7 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(CustomExceptionConflict.class)
-    public final void handleInvalidToken( CustomExceptionConflict ex,
+    public final void handleConflict( CustomExceptionConflict ex,
                                           HttpServletRequest request,
                                           HttpServletResponse response) {
         this.printError(ex);

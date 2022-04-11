@@ -1,6 +1,6 @@
 package com.junive.account.security;
 
-import com.junive.account.util.CustomText;
+import com.junive.account.util.CustomURL;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +24,7 @@ public class SecurityBean {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedOrigins(CustomText.localhostUrl, CustomText.juniveUrl)
+                        .allowedOrigins(CustomURL.localhostUrl, CustomURL.juniveUrl)
                         .allowedHeaders("*");
             }
         };

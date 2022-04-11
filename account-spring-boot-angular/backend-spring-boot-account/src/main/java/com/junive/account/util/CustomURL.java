@@ -1,6 +1,6 @@
 package com.junive.account.util;
 
-public class CustomText {
+public class CustomURL {
     public final static String
             loginUrl = "/account/login",
             allUserUrl = "/account/user/all",
@@ -12,10 +12,7 @@ public class CustomText {
             tokenRefreshUrl = "/account/token/refresh",
             localhostUrl = "http://localhost:4200",
             juniveUrl = "http://junive.fr:4200",
-            rolesClaim = "roles",
-            userResponse = "user_response",
-            tokenStartName = "Bearer ",
-            tokenAccessName = "access_token",
-            tokenRefreshName = "refresh_token";
+            ActuatorUrl = "/actuator",
+            tokenStartName = "Bearer ";
 
 }

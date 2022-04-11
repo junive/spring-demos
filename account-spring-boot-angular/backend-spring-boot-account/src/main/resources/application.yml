@@ -22,3 +22,21 @@ spring:
   main:
     allow-circular-references: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: "Account application"
+    description: "Manage account login/register"
+    version: 1.0
+

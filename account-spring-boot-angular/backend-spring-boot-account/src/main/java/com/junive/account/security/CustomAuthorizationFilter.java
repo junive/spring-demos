@@ -1,15 +1,13 @@
 package com.junive.account.security;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.junive.account.service.TokenService;
 import com.junive.account.util.CustomStatus;
-import com.junive.account.util.CustomText;
+import com.junive.account.util.CustomURL;
 import com.junive.account.util.ServletUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 
 import static java.util.Arrays.stream;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -41,23 +38,16 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                                      FilterChain filterChain)
                                     throws ServletException, IOException {
 
-        if (request.getServletPath().equals(CustomText.loginUrl)
-                || request.getServletPath().equals(CustomText.tokenRefreshUrl)) {
+        if (request.getServletPath().equals(CustomURL.loginUrl)
+                || request.getServletPath().equals(CustomURL.tokenRefreshUrl)) {
             filterChain.doFilter(request, response); // pass the request to the next filter
         } else {
             String authorizationHeader = request.getHeader(AUTHORIZATION);
 
-            if (authorizationHeader != null && authorizationHeader.startsWith(CustomText.tokenStartName)) {
+            if (authorizationHeader != null && authorizationHeader.startsWith(CustomURL.tokenStartName)) {
                 try {
                     log.info("Adding the Authorizations to user");
                     String token = tokenService.getTokenByHeader(authorizationHeader);
-
-                    DecodedJWT jwt = JWT.decode(token);
-                    if( jwt.getExpiresAt().before(new Date()) ) {
-                        ServletUtil.errorResponse(request, response,
-                                HttpStatus.GONE, CustomStatus.TOKEN_EXPIRED);
-                        throw new AccountExpiredException("Token has expired");
-                    }
 
                     String username = tokenService.getUsernameByToken(token);
                     String[] roles = tokenService.getRolesByToken(token);
@@ -78,6 +68,10 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     filterChain.doFilter(request, response);
                     log.info("Finish the Authorizations to user");
+                } catch(TokenExpiredException ex) {
+                    log.error("Token has Expired", ex.getMessage());
+                    ServletUtil.errorResponse(request, response,
+                            HttpStatus.GONE, CustomStatus.TOKEN_EXPIRED);
                 } catch (Exception exception) {
                     log.error("Error logging in: {}", exception.getMessage());
                     ServletUtil.errorResponse(request, response,

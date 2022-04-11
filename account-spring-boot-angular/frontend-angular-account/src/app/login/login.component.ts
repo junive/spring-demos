@@ -4,6 +4,7 @@ import { TokenStorageService } from '../_services/token-storage.service';
 import { Role } from '../_models/role';
 import { User } from '../_models/user';
 import { HttpErrorResponse } from '@angular/common/http';
+import { CustomStatus } from '../_helpers/custom-status';
 
 @Component({
   selector: 'app-login',
@@ -41,6 +42,7 @@ export class LoginComponent implements OnInit {
         const user: User = tokens.get("user_response") as User;
 
         this.tokenStorage.saveToken(tokens.get("access_token") );
+        this.tokenStorage.saveRefreshToken(tokens.get("refresh_token") );
         this.tokenStorage.saveUser(user);
         this.isLoginFailed = false;
         this.isLoggedIn = true;
@@ -48,7 +50,8 @@ export class LoginComponent implements OnInit {
         this.reloadPage();
       },
       error: (err: HttpErrorResponse) => {
-        this.errorMessage = err.message;
+        const status: CustomStatus = new CustomStatus(err.error);
+        this.errorMessage = status.getLoginError();
         this.isLoginFailed = true;
       }
 

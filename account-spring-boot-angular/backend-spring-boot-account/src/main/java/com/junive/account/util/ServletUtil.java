@@ -2,6 +2,7 @@ package com.junive.account.util;
 
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.junive.account.model.AppUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -69,5 +70,20 @@ public class ServletUtil {
                                       HttpStatus status,
                                       CustomStatus customStatus) {
         errorResponse(request, response, status, customStatus, "null");
+    }
+
+    public static void userOkMessage(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     AppUser appUser,
+                                     String accessToken,
+                                     String refreshToken ) {
+
+
+        Map<String, Object> tokens = new HashMap<>();
+        tokens.put("access_token", accessToken);
+        tokens.put("refresh_token", refreshToken);
+        tokens.put("user_response", appUser);
+        response.setContentType(APPLICATION_JSON_VALUE);
+        ServletUtil.okResponse(response, tokens);
     }
 }

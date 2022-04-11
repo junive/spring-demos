@@ -1,22 +1,24 @@
 package com.junive.account.controller;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.junive.account.model.AppUser;
 import com.junive.account.model.Role;
 import com.junive.account.model.RoleRequest;
-import com.junive.account.util.ServletUtil;
 import com.junive.account.service.TokenService;
 import com.junive.account.service.UserService;
-import com.junive.account.util.CustomText;
+import com.junive.account.util.CustomStatus;
+import com.junive.account.util.CustomURL;
+import com.junive.account.util.ServletUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -30,30 +32,30 @@ public class UserController {
     private final TokenService tokenService;
 
 
-    @GetMapping(CustomText.allUserUrl)
+    @GetMapping(CustomURL.allUserUrl)
     public ResponseEntity<List<AppUser>> getUsers() {
         return ResponseEntity.ok().body(userService.getUsers());
     }
 
-    @PostMapping(CustomText.saveUserUrl)
+    @PostMapping(CustomURL.saveUserUrl)
     public ResponseEntity<AppUser> saveUser(@RequestBody AppUser user) {
-        URI url = ServletUtil.getUriByPath(CustomText.saveUserUrl);
+        URI url = ServletUtil.getUriByPath(CustomURL.saveUserUrl);
         return ResponseEntity.created(url).body(userService.saveUser(user));
     }
 
-    @PostMapping(CustomText.saveRoleUrl)
+    @PostMapping(CustomURL.saveRoleUrl)
     public ResponseEntity<Role> saveRole(@RequestBody Role role) {
-        URI url  = ServletUtil.getUriByPath( CustomText.saveRoleUrl);
+        URI url  = ServletUtil.getUriByPath( CustomURL.saveRoleUrl);
         return ResponseEntity.created(url).body(userService.saveRole(role));
     }
 
-    @PostMapping( CustomText.addRoleUrl)
+    @PostMapping( CustomURL.addRoleUrl)
     public ResponseEntity<?> addRoleToUser(@RequestBody RoleRequest request) {
         userService.addRoleToUser(request.username(), request.roleName());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(CustomText.findUserUrl+ "/{username}")
+    @GetMapping(CustomURL.findUserUrl+ "/{username}")
     public ResponseEntity<AppUser> getUserByToken(
             @PathVariable("username") String username, HttpServletRequest request) {
         log.info("Checking the user by token");
@@ -64,28 +66,37 @@ public class UserController {
         return ResponseEntity.ok().body(user);
     }
 
-    @GetMapping(CustomText.tokenRefreshUrl)
-    public  ResponseEntity<Map<String, String>> refreshToken(HttpServletRequest request)  {
+    @GetMapping(CustomURL.tokenRefreshUrl)
+    public void refreshToken(
+                HttpServletRequest request,
+                HttpServletResponse response) {
         log.info("Refreshing the token");
+
+
 
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         String refreshToken = tokenService.getTokenByHeader(authorizationHeader);
-        String username = tokenService.getUsernameByToken(refreshToken);
-        AppUser user = userService.getUserByUsername(username);
-        String accessToken = tokenService.createAccessToken(
-                user.getUsername(),
-                ServletUtil.getUrlByRequest(request),
-                user.getRoles().stream()
-                        .map(Role::getName)
-                        .collect(Collectors.toList())
-        );
+        System.out.println(refreshToken);
+        try {
+            String username = tokenService.getUsernameByToken(refreshToken);
 
-        Map<String, String> tokens = new HashMap<>();
-        tokens.put(CustomText.tokenAccessName, accessToken);
-        tokens.put(CustomText.tokenRefreshName, refreshToken);
+            AppUser appUser = userService.getUserByUsername(username);
+            String accessToken = tokenService.createAccessToken(
+                    appUser.getUsername(),
+                    ServletUtil.getUrlByRequest(request),
+                    appUser.getRoles().stream()
+                            .map(Role::getName)
+                            .collect(Collectors.toList())
+            );
 
-        log.info("sending the token");
-        return ResponseEntity.ok().body(tokens);
+            log.info("sending the token");
+            ServletUtil.userOkMessage(request, response, appUser, accessToken, refreshToken);
+        } catch (TokenExpiredException ex) {
+            ServletUtil.errorResponse(request, response,
+                    HttpStatus.GONE, CustomStatus.TOKEN_EXPIRED);
+        }
+
+    }
 
 /*
         response.setContentType(APPLICATION_JSON_VALUE);
@@ -101,7 +112,7 @@ public class UserController {
         }
 
  */
-    }
+
 
 
 }

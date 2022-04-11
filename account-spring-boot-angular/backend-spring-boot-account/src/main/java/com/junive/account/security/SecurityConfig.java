@@ -1,6 +1,6 @@
 package com.junive.account.security;
 
-import com.junive.account.util.CustomText;
+import com.junive.account.util.CustomURL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        customLoginFilter.setFilterProcessesUrl(CustomText.loginUrl);
+        customLoginFilter.setFilterProcessesUrl(CustomURL.loginUrl);
 
         http.cors().and() // Used for Cross Origin
                 .csrf().disable()
@@ -47,17 +47,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests()
                 .mvcMatchers(
-                        CustomText.saveUserUrl,
-                        CustomText.loginUrl,
-                        CustomText.tokenRefreshUrl)
+                        CustomURL.saveUserUrl,
+                        CustomURL.loginUrl,
+                        CustomURL.tokenRefreshUrl,
+                        CustomURL.ActuatorUrl + "/**")
                     .permitAll()
               //  .mvcMatchers(
                    //     CustomText.findUserUrl)
                   //  .hasRole("USER")
                 .mvcMatchers(
-                        CustomText.findUserUrl + "/**",
-                        CustomText.roleUrl + "/**",
-                        CustomText.allUserUrl)
+                        CustomURL.findUserUrl + "/**",
+                        CustomURL.roleUrl + "/**",
+                        CustomURL.allUserUrl)
                     .hasRole("ADMIN")
                 .anyRequest().authenticated(); // Everyone must be authenticated
 

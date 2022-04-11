@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Role } from './_models/role';
 import { TokenStorageService } from './_services/token-storage.service';
 
@@ -14,8 +15,10 @@ export class AppComponent implements OnInit {
   showAdminBoard = false;
   showModeratorBoard = false;
   username?: string;
+  eventBusSub?: Subscription;
 
-  constructor(private tokenStorageService: TokenStorageService) { }
+  constructor(
+    private tokenStorageService: TokenStorageService) { }
 
   ngOnInit(): void {
     this.isLoggedIn = !!this.tokenStorageService.getToken();
@@ -25,9 +28,16 @@ export class AppComponent implements OnInit {
 
       const roleNames = this.roles.map(role => role.name);
       this.showAdminBoard = roleNames.includes('ROLE_ADMIN');
-      this.showModeratorBoard = roleNames.includes('ROLE_SUPER_ADMIN');
       this.username = user.username;
     }
+    /*this.eventBusSub = this.eventBusService.on('logout', () => {
+      this.logout();
+    });*/
+  }
+
+  ngOnDestroy(): void {
+   // if (this.eventBusSub)
+      //this.eventBusSub.unsubscribe();
   }
 
   public logout(): void {

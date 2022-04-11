@@ -8,7 +8,7 @@ import com.junive.account.exception.CustomExceptionInvalid;
 import com.junive.account.exception.CustomExceptionNotFound;
 import com.junive.account.util.CustomStatus;
 import com.junive.account.util.ServletUtil;
-import com.junive.account.util.CustomText;
+import com.junive.account.util.CustomURL;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,17 +21,17 @@ import java.util.List;
 @Slf4j
 public class TokenService {
 
-    public String createRefreshToken(String username, String issuer) {
-        return this.createToken(username, 10, issuer, null);
+    public String createAccessToken(String username, String issuer, List<?> roles) {
+        return this.createToken(username, 10, issuer, roles);
     }
 
-    public String createAccessToken(String username, String issuer, List<?> roles) {
-        return this.createToken(username, 2000, issuer, roles);
+    public String createRefreshToken(String username, String issuer) {
+        return this.createToken(username, 200, issuer, null);
     }
 
     public String createToken(String username, int minutes, String issuer, List<?> roles) {
         JWTCreator.Builder token = JWT.create();
-        Date expireDate = new Date(System.currentTimeMillis() + minutes * 60 * 1000);
+        Date expireDate = new Date(System.currentTimeMillis() + (minutes) * 10 * 1000);
         token.withSubject(username) // unique
                 .withExpiresAt(expireDate) // 10 mn to access token
                 .withIssuer(issuer);
@@ -50,7 +50,7 @@ public class TokenService {
 
     public String[] getRolesByToken(String token) {
         return getDecodedJWTByToken(token)
-                .getClaim(CustomText.rolesClaim).asArray(String.class);
+                .getClaim("roles").asArray(String.class);
     }
 
     public String getTokenByHeader(String authorizationHeader) {
@@ -58,11 +58,11 @@ public class TokenService {
             throw CustomExceptionNotFound.builder()
                     .customStatus(CustomStatus.HEADER_AUTHORIZATION_NOT_FOUND).build();
         }
-        if (!authorizationHeader.startsWith(CustomText.tokenStartName)) {
+        if (!authorizationHeader.startsWith(CustomURL.tokenStartName)) {
             throw CustomExceptionInvalid.builder()
                     .customStatus(CustomStatus.TOKEN_START_INVALID).build();
         }
-        return authorizationHeader.substring(CustomText.tokenStartName.length());
+        return authorizationHeader.substring(CustomURL.tokenStartName.length());
     }
 /*
     public void throwTokenNotMatchUsername(String token, String username) {

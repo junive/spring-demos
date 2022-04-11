@@ -1,8 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { User } from '../_models/user';
-import { CustomException } from '../_models/custom-exception';
 import { UserService } from '../_services/user.service';
+import { CustomStatus } from '../_helpers/custom-status';
 
 @Component({
   selector: 'app-register',
@@ -36,17 +36,11 @@ export class RegisterComponent implements OnInit {
         this.isSignUpFailed = false;
       },
       error: (err: HttpErrorResponse) => {
-        
-        const exception: CustomException = err.error as CustomException
-        console.log(exception);
-        if (!exception || !exception.custom_status) {
-          this.errorMessage = "Unknow error : "+ err.message + " with Status :" + err.statusText;
-        } else if (exception.custom_status == "USERNAME_EXIST") {
-          this.errorMessage = "Username '"+exception.wrong+"' already extist ! ";
-        } else if (exception.custom_status == "EMAIL_EXIST") {
-          this.errorMessage = "The email '"+exception.wrong+"' already extist ! ";
-        }
-        //const exception = new CustomException();
+       // const error: CustomException = err.error as CustomException;
+       
+        const status: CustomStatus = new CustomStatus(err.error);
+        this.errorMessage = status.getRegisterError();
+       
         this.isSignUpFailed = true;
       }
     });

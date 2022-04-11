@@ -33,6 +33,15 @@ export class UserService {
       httpHeaderEncoded);
   }
 
+  refreshToken(token: string) {
+    return this.http.get<Map<string, Object>>(
+      AUTH_API + '/token/refresh', 
+      {headers : {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }} );
+  }
+
   public getUserByName(username: string): Observable<User> {
     return this.http.get<User>(
       AUTH_API + `/user/find/${username}`, 

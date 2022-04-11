@@ -1,8 +1,9 @@
 package com.junive.account.security;
 
+import com.junive.account.model.AppUser;
 import com.junive.account.service.TokenService;
+import com.junive.account.service.UserService;
 import com.junive.account.util.CustomStatus;
-import com.junive.account.util.CustomText;
 import com.junive.account.util.ServletUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,17 +21,14 @@ import org.springframework.stereotype.Component;
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     private final TokenService tokenService;
+    private final UserService userService;
 
     @Override
     @Autowired
@@ -83,12 +81,8 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
                 user.getUsername(), ServletUtil.getUrlByRequest(request)
         );
 
-        Map<String, Object> tokens = new HashMap<>();
-        tokens.put(CustomText.tokenAccessName, accessToken);
-        tokens.put(CustomText.tokenRefreshName, refreshToken);
-        tokens.put(CustomText.userResponse, user);
-        response.setContentType(APPLICATION_JSON_VALUE);
-        ServletUtil.okResponse(response, tokens);
+        AppUser appUser = userService.getUserByUsername(user.getUsername());
+        ServletUtil.userOkMessage(request, response, appUser, accessToken, refreshToken);
 
     }
 }
